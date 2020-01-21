@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>geryxyz</groupId>
+	<artifactId>showmygraph</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Show My Graph</name>
+
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.graphstream/gs-core -->
+		<dependency>
+			<groupId>org.graphstream</groupId>
+			<artifactId>gs-core</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>neo4j-gremlin</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+		<!-- neo4j-tinkerpop-api-impl is NOT Apache 2 licensed - more information 
+			below -->
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-tinkerpop-api-impl</artifactId>
+			<version>0.7-3.2.3</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.tinkerpop/gremlin-driver -->
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>gremlin-driver</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.6</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.tinkerpop.gremlin/gremlin-groovy -->
+		<dependency>
+			<groupId>com.tinkerpop.gremlin</groupId>
+			<artifactId>gremlin-groovy</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+	</dependencies>
+</project>
