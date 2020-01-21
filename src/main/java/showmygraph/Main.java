@@ -2,9 +2,13 @@ package showmygraph;
 
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
-
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+
+import showmygraph.ui.MainWindow;
+
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+
+import java.awt.EventQueue;
 
 import javax.script.Bindings;
 
@@ -37,7 +41,16 @@ public class Main {
 		bindings.put("g", g);
 		var result = engine.eval("g.V().toList()", bindings);		
 		
-		graph.display();
-	}
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					MainWindow window = new MainWindow(graph);
+					window.show();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+}
 
 }
