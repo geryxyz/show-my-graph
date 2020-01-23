@@ -5,6 +5,8 @@ import javax.swing.JFrame;
 import org.graphstream.graph.Graph;
 import org.graphstream.ui.swingViewer.View;
 import org.graphstream.ui.swingViewer.Viewer;
+import org.graphstream.ui.swingViewer.ViewerListener;
+
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -33,6 +35,7 @@ public class MainWindow {
 	 */
 	public MainWindow(Graph graph) {
 		this.graph = graph;
+		this.graph.addAttribute("ui.stylesheet", "node { size: 10pt, 15pt; }");
 		initialize();
 	}
 
@@ -127,6 +130,7 @@ public class MainWindow {
 		frmYourGraph.getContentPane().add(graphPanel, BorderLayout.CENTER);
 		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		viewer.enableAutoLayout();
+		
 		View view = viewer.addDefaultView(false);
 		graphPanel.add(view, BorderLayout.CENTER);
 	}
@@ -134,4 +138,17 @@ public class MainWindow {
 	public void show() {
 		this.frmYourGraph.setVisible(true);
 	}
+}
+
+class Clicks implements ViewerListener {
+
+	@Override
+	public void viewClosed(String viewName) { }
+
+	@Override
+	public void buttonPushed(String id) { }
+
+	@Override
+	public void buttonReleased(String id) {	}
+	
 }
