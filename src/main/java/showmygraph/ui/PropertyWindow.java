@@ -1,7 +1,7 @@
 package showmygraph.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -9,20 +9,21 @@ import javax.swing.JTable;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-import org.graphstream.graph.Node;
+import showmygraph.model.PropertyMap;
+
 import java.awt.Window.Type;
 
-public class NodeWindow {
+public class PropertyWindow {
 
 	private JFrame frame;
-	private Node selected;
 	private JTable nodePropertiesTable;
+	private PropertyMap selected;
 
 	public void show() {
 		this.frame.setVisible(true);
 	}
 
-	public NodeWindow(Node selected) {
+	public PropertyWindow(PropertyMap selected) {
 		this.selected = selected;
 		this.initialize();
 	}
@@ -58,19 +59,20 @@ public class NodeWindow {
 			
 			@Override
 			public Object getValueAt(int rowIndex, int columnIndex) {
-				List<String> attributeKeys = new ArrayList<String>((Collection<? extends String>) selected.getAttributeKeySet());
+				List<String> attributeKeys = new ArrayList<>(selected.keySet());
+				attributeKeys.sort(Comparator.naturalOrder());
 				String key = attributeKeys.get(rowIndex);
 				if (columnIndex == 0) {
 					return key;
 				} else if (columnIndex == 1) {
-					return selected.getAttribute(key);
+					return selected.get(key);
 				}
 				return "no attribute";
 			}
 			
 			@Override
 			public int getRowCount() {
-				return selected.getAttributeCount();
+				return selected.size();
 			}
 			
 			@Override

@@ -79,3 +79,5 @@ local.properties
 .scala_dependencies
 .worksheet
 /target/
+
+com.yworks.yfiles.java.developmentlicense.xml

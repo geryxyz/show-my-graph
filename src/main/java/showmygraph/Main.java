@@ -1,13 +1,12 @@
 package showmygraph;
 
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import showmygraph.model.PropertyMap;
 import showmygraph.ui.GraphWindow;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
@@ -17,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.script.Bindings;
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -31,8 +28,7 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		System.out.println("I will show your graph to you.");
 
-		Graph graph = new SingleGraph("localhost");
-		graph.addAttribute("ui.antialias");
+		GraphWindow graphWindow = new GraphWindow();
 
 		ArgumentParser parser = ArgumentParsers.newFor("showmygraph").build()
 				.description("Will show your Tinkerpop (Gremlin Server) graph.");
@@ -71,22 +67,28 @@ public class Main {
 		}
 				
 		for (Vertex v : vertexes) {
-			var node = graph.addNode(v.id().toString());
+			var node = graphWindow.addNode(v.id().toString());
 			System.out.println(String.format("Loading node %s", v.id().toString()));
-			node.addAttribute("ui.label", g.V(v).label().next());
+			graphWindow.setLabelOf(node, g.V(v).label().next());
 			Map<Object, Object> properties = g.V(v).valueMap().next();
 			for (var property : properties.entrySet()) {
-				node.addAttribute(property.getKey().toString(), property.getValue());
+				if ( node.getTag() instanceof PropertyMap) {
+					PropertyMap tag = (PropertyMap) node.getTag();
+					tag.put(property.getKey().toString(), property.getValue());
+				}
 			}
 			System.out.println(String.format("\tAltogether %d properies loaded.", properties.size()));
 		}
 		for (Edge e : g.E().where(__.bothV().is(P.within(vertexes))).toList()) {
-			var edge = graph.addEdge(e.id().toString(), e.outVertex().id().toString(), e.inVertex().id().toString());
+			var edge = graphWindow.addEdge(e.id().toString(), e.outVertex().id().toString(), e.inVertex().id().toString());
 			System.out.println(String.format("Loading edge %s", e.id().toString()));
-			edge.addAttribute("ui.label", g.E(e).label().next());
+			graphWindow.setLabelOf(edge, g.E(e).label().next());
 			Map<Object, Object> properties = g.E(e).valueMap().next();
 			for (var property : properties.entrySet()) {
-				edge.addAttribute(property.getKey().toString(), property.getValue());
+				if (edge.getTag() instanceof PropertyMap) {
+					PropertyMap tag = (PropertyMap) edge.getTag();
+					tag.put(property.getKey().toString(), property.getValue());
+				}
 			}
 			System.out.println(String.format("\tAltogether %d properies loaded.", properties.size()));
 		}
@@ -94,8 +96,7 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GraphWindow window = new GraphWindow(graph);
-					window.show();
+					graphWindow.show();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

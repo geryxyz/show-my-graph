@@ -2,74 +2,138 @@ package showmygraph.ui;
 
 import javax.swing.JFrame;
 
-import org.graphstream.graph.Graph;
-import org.graphstream.ui.swingViewer.View;
-import org.graphstream.ui.swingViewer.Viewer;
-import org.graphstream.ui.swingViewer.ViewerListener;
-import org.graphstream.ui.swingViewer.ViewerPipe;
+import org.apache.commons.lang.NotImplementedException;
+
+import com.yworks.yfiles.geometry.PointD;
+import com.yworks.yfiles.geometry.RectD;
+import com.yworks.yfiles.graph.GraphItemTypes;
+import com.yworks.yfiles.graph.IEdge;
+import com.yworks.yfiles.graph.IGraph;
+import com.yworks.yfiles.graph.ILabel;
+import com.yworks.yfiles.graph.IModelItem;
+import com.yworks.yfiles.graph.INode;
+import com.yworks.yfiles.graph.styles.DefaultLabelStyle;
+import com.yworks.yfiles.layout.organic.OrganicLayout;
+import com.yworks.yfiles.utils.IEventListener;
+import com.yworks.yfiles.view.GraphComponent;
+import com.yworks.yfiles.view.Pen;
+import com.yworks.yfiles.view.input.GraphViewerInputMode;
+import com.yworks.yfiles.view.input.ItemClickedEventArgs;
+
+import showmygraph.model.PropertyMap;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.HierarchyBoundsListener;
+import java.awt.event.HierarchyEvent;
 
 public class GraphWindow {
 
 	private JFrame frame;
-	private Graph graph;
+	GraphComponent component = new GraphComponent();
+	IGraph graph;
 
-	public GraphWindow(Graph graph) {
-		this.graph = graph;
-		//this.graph.addAttribute("ui.stylesheet", "node { size: 10pt, 15pt; }");
+	public GraphWindow() {
 		initialize();
 	}
 
 	private void initialize() {
+		GraphViewerInputMode inputMode = new GraphViewerInputMode();
+		inputMode.setToolTipItems(GraphItemTypes.LABEL_OWNER);
+		inputMode.setClickableItems(GraphItemTypes.NODE.or(GraphItemTypes.EDGE));
+		inputMode.setFocusableItems(GraphItemTypes.NONE);
+		inputMode.setSelectableItems(GraphItemTypes.NONE);
+		inputMode.setMarqueeSelectableItems(GraphItemTypes.NONE);
+		
+		inputMode.addItemLeftClickedListener(new IEventListener<ItemClickedEventArgs<IModelItem>>() {
+			
+			@Override
+			public void onEvent(Object source, ItemClickedEventArgs<IModelItem> args) {
+					if (args.getItem().getTag() instanceof PropertyMap) {
+						PropertyMap properties = (PropertyMap) args.getItem().getTag();
+						PropertyWindow window = new PropertyWindow(properties);
+						window.show();
+					}
+			}
+		});
+		
+		component.setInputMode(inputMode);
+		
+		this.graph = component.getGraph();
+		
 		frame = new JFrame();
 		frame.setBounds(new Rectangle(0, 0, 500, 500));
 		frame.setTitle("Your graph");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new BorderLayout());
-		
-		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
-		viewer.enableAutoLayout();
-		View view = viewer.addDefaultView(false);
-		view.addMouseListener(new MouseListener() {
-			
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				var element = view.findNodeOrSpriteAt(e.getX(), e.getY());
-				System.out.println(element);
-			}
-		});
-		frame.getContentPane().add(view, BorderLayout.CENTER);
+		frame.getContentPane().setLayout(new BorderLayout());		
+		frame.getContentPane().add(this.component, BorderLayout.CENTER);		
 	}
 
 	public void show() {
+		OrganicLayout layout = new OrganicLayout();
+		layout.setNodeSizeConsiderationEnabled(true);
+		layout.setMinimumNodeDistance(100);
+		graph.applyLayout(layout);
 		this.frame.setVisible(true);
+		component.fitGraphBounds();
+		
+		this.frame.getContentPane().addHierarchyBoundsListener(new HierarchyBoundsListener() {
+			
+			@Override
+			public void ancestorResized(HierarchyEvent e) {
+				component.fitGraphBounds();				
+			}
+			
+			@Override
+			public void ancestorMoved(HierarchyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+	}
+		
+	public INode addNode(String id) {
+		INode node = graph.createNode();
+		var tag = new PropertyMap(id);
+		node.setTag(tag);
+		return node;
+	}
+	
+	public void setLabelOf(INode node, String text) {
+		ILabel label = graph.addLabel(node, text);
+		graph.setNodeLayout(node, new RectD(new PointD(0, 0), label.getPreferredSize()));
+	}
+
+	public void setLabelOf(IEdge edge, String text) {
+		ILabel label = graph.addLabel(edge, text);
+		DefaultLabelStyle style = new DefaultLabelStyle();
+		style.setBackgroundPaint(new Color(.83f, .83f, .83f, .8f));
+		style.setBackgroundPen(new Pen(new Color(.66f, .66f, .66f, .8f)));
+		graph.setStyle(label, style);
+	}
+
+	public IEdge addEdge(String id, String from, String to) {
+		INode fromNode = null;
+		INode toNode = null;
+		for (var node : graph.getNodes()) {
+				if (node.getTag() instanceof PropertyMap) {
+					PropertyMap tag = (PropertyMap) node.getTag();
+					if (from.equals(tag.getID())) {
+						fromNode = node;
+					}
+					if (to.equals(tag.getID())) {
+						toNode = node;
+					}
+				}
+		}
+		if (fromNode != null && toNode != null) {
+			IEdge edge = graph.createEdge(fromNode, toNode);
+			var tag = new PropertyMap(id);
+			edge.setTag(tag);
+			return edge;
+		} else {
+			throw new NotImplementedException("need to create an exception structure");
+		}
 	}
 }
