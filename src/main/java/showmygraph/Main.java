@@ -36,6 +36,7 @@ public class Main {
 		parser.addArgument("--port").type(Integer.class).required(false).setDefault(8182);
 		parser.addArgument("--traversal").type(String.class).required(false).setDefault("g");
 		parser.addArgument("--query").type(String.class).required(false).setDefault("g.V().toList()");
+		parser.addArgument("--label").type(String.class).required(false).setDefault("${label}");
 
 		Namespace resolvedArgs;
 		try {
@@ -69,14 +70,19 @@ public class Main {
 		for (Vertex v : vertexes) {
 			var node = graphWindow.addNode(v.id().toString());
 			System.out.println(String.format("Loading node %s", v.id().toString()));
-			graphWindow.setLabelOf(node, g.V(v).label().next());
 			Map<Object, Object> properties = g.V(v).valueMap().next();
-			for (var property : properties.entrySet()) {
-				if ( node.getTag() instanceof PropertyMap) {
-					PropertyMap tag = (PropertyMap) node.getTag();
+			String labelPattern = resolvedArgs.getString("label");
+			if ( node.getTag() instanceof PropertyMap) {
+				PropertyMap tag = (PropertyMap) node.getTag();
+				for (var property : properties.entrySet()) {
 					tag.put(property.getKey().toString(), property.getValue());
 				}
+				labelPattern = labelPattern.replace("$[label]", g.V(v).label().next());
+				for (String key : tag.keySet()) {
+					labelPattern = labelPattern.replace(String.format("$[%s]", key), tag.get(key).toString());
+				}
 			}
+			graphWindow.setLabelOf(node, labelPattern);
 			System.out.println(String.format("\tAltogether %d properies loaded.", properties.size()));
 		}
 		for (Edge e : g.E().where(__.bothV().is(P.within(vertexes))).toList()) {

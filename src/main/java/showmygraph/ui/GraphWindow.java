@@ -18,7 +18,9 @@ import com.yworks.yfiles.utils.IEventListener;
 import com.yworks.yfiles.view.GraphComponent;
 import com.yworks.yfiles.view.Pen;
 import com.yworks.yfiles.view.input.GraphViewerInputMode;
+import com.yworks.yfiles.view.input.HoveredItemChangedEventArgs;
 import com.yworks.yfiles.view.input.ItemClickedEventArgs;
+import com.yworks.yfiles.view.input.ItemHoverInputMode;
 
 import showmygraph.model.PropertyMap;
 
@@ -31,13 +33,15 @@ import java.awt.event.HierarchyEvent;
 public class GraphWindow {
 
 	private JFrame frame;
-	GraphComponent component = new GraphComponent();
-	IGraph graph;
+	private GraphComponent component = new GraphComponent();
+	private IGraph graph;
 
 	public GraphWindow() {
 		initialize();
 	}
 
+	private PropertyHoverWindow hoverWindow = null;
+	
 	private void initialize() {
 		GraphViewerInputMode inputMode = new GraphViewerInputMode();
 		inputMode.setToolTipItems(GraphItemTypes.LABEL_OWNER);
@@ -57,6 +61,30 @@ public class GraphWindow {
 					}
 			}
 		});
+		
+		ItemHoverInputMode hoverMode = new ItemHoverInputMode();
+		hoverMode.setEnabled(true);
+		hoverMode.setHoverItems(GraphItemTypes.EDGE.or(GraphItemTypes.NODE));
+		hoverMode.setInvalidItemsDiscardingEnabled(false);
+		hoverMode.addHoveredItemChangedListener(new IEventListener<HoveredItemChangedEventArgs>() {
+			
+			@Override
+			public void onEvent(Object source, HoveredItemChangedEventArgs args) {
+				if (args.getItem() != null) {
+					PropertyMap properties = (PropertyMap) args.getItem().getTag();
+					if (hoverWindow != null) {
+						hoverWindow.close();
+					}
+					hoverWindow = new PropertyHoverWindow(properties);
+					hoverWindow.show();
+				} else {
+					if (hoverWindow != null) {
+						hoverWindow.close();
+					}					
+				}
+			}
+		});
+		inputMode.setItemHoverInputMode(hoverMode);
 		
 		component.setInputMode(inputMode);
 		

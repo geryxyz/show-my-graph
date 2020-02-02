@@ -11,16 +11,26 @@ import javax.swing.table.TableModel;
 
 import showmygraph.model.PropertyMap;
 
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Window.Type;
 
 public class PropertyWindow {
 
-	private JFrame frame;
+	protected JFrame frame;
 	private JTable nodePropertiesTable;
 	private PropertyMap selected;
 
 	public void show() {
+		Point location = MouseInfo.getPointerInfo().getLocation();
+		location.translate(20, 20);
+		this.frame.setLocation(location);
+		this.frame.pack();
 		this.frame.setVisible(true);
+	}
+	
+	public void close() {
+		this.frame.dispose();
 	}
 
 	public PropertyWindow(PropertyMap selected) {
@@ -30,9 +40,15 @@ public class PropertyWindow {
 
 	private void initialize() {
 		this.frame = new JFrame();
-		frame.setType(Type.UTILITY);
+		this.frame.setAlwaysOnTop(true);
+		this.frame.setType(Type.UTILITY);
 		this.frame.setBounds(100, 100, 450, 300);
 		this.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		if (this.selected.containsKey(PropertyMap.ID_TAG)) {
+			this.frame.setTitle(String.format("Properties of %s", this.selected.get(PropertyMap.ID_TAG)));
+		} else {
+			this.frame.setTitle("Properties of item without ID");
+		}
 		
 		this.nodePropertiesTable = new JTable();
 		this.frame.getContentPane().add(nodePropertiesTable);

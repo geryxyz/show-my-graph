@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class PropertyMap extends HashMap<String, Object> {
 
-	static final String ID_TAG = "id";
+	public static final String ID_TAG = "id";
 
 	private static final long serialVersionUID = 1299270593497145766L;
 
