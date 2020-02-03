@@ -1,10 +1,9 @@
 package showmygraph.architecture;
 
-public class Increment extends Step {
+public class Increment extends Step<SingleValueContext<Integer>, SingleValueContext<Integer>> {
 
 	@Override
-	protected <TIn extends IContext, TOut extends IContext> TOut apply(TIn context) {
-		// TODO Auto-generated method stub
-		return null;
+	protected SingleValueContext<Integer> execute(SingleValueContext<Integer> context) {
+		return new SingleValueContext<Integer>(context.getValue() + 1);
 	}
 }

@@ -1,7 +1,7 @@
 package showmygraph.architecture;
 
-public abstract class Source extends Step {
-	public <TOut extends IContext> TOut apply() {
-		return apply(EmptyContext.instance);
+public abstract class Source<TOut extends IContext> extends Step<EmptyContext, TOut> {
+	public TOut apply() {
+		return execute(EmptyContext.instance);
 	}
 }
