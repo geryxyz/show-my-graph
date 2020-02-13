@@ -10,4 +10,9 @@ public class SingleValueContext<TValue> implements IContext {
 	public SingleValueContext(TValue value) {
 		this.value = value;
 	}	
+	
+	@Override
+	public String toString() {
+		return value.toString();
+	}
 }

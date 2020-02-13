@@ -6,6 +6,9 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import showmygraph.architecture.Increment;
+import showmygraph.architecture.SoutSink;
+import showmygraph.architecture.ZeroSource;
 import showmygraph.model.PropertyMap;
 import showmygraph.ui.GraphWindow;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -28,10 +31,16 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		
 		
+		var s = new ZeroSource()
+			.then(new Increment())
+			.then(new Increment())
+			.then(new Increment())
+			.endWith(new SoutSink());
 		
+		s.pump();
+		System.out.println();
 		
-		
-		
+		/*
 		
 		System.out.println("I will show your graph to you.");
 
@@ -114,6 +123,6 @@ public class Main {
 					e.printStackTrace();
 				}
 			}
-		});
+		});*/
 	}
 }

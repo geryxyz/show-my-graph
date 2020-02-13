@@ -1,31 +1,39 @@
 package showmygraph.architecture;
 
 public abstract class Step<TIn extends IContext, TOut extends IContext> implements IStep {
-	private Step<IContext, IContext> next = null;
-	private Step<IContext, IContext> previous = null;
+	protected Step<?, ?> next = null;
+	protected Step<?, ?> previous = null;
 	
-	@SuppressWarnings("unchecked")
-	public Step<IContext, IContext> then(Step<IContext, IContext> next) {
+	public Step<?, ?> then(Step<?, ?> next) {
 		this.next = next;
-		next.previous = (Step<IContext, IContext>) this; 
+		next.previous = this; 
 		return this.next;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public Step<IContext, IContext> before(Step<IContext, IContext> previous) {
-		this.previous = previous;
-		previous.next = (Step<IContext, IContext>) this;
-		return this.previous;
+	public Source<?> endWith(Sink<?> sink) {
+		then(sink);
+		return getSource();
 	}
 	
-	//TODO: return Source type
-	public Step<IContext, IContext> getSource() {
+	public Step<?, ?> before(Step<?, ?> previous) {
+		this.previous = previous;
+		previous.next = this;
+		return this.previous;
+	}
+		
+	public Source<?> getSource() {
 		if (this.previous == null) {
-			return (Step<IContext, IContext>) this;
+			return (Source<?>) this;
 		} else {
-			return this.getSource();
+			return this.previous.getSource();
 		}
 	}
 	
 	protected abstract TOut execute(TIn context);
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public IContext unsafeExecute(IContext context) {
+		return this.execute((TIn) context);
+	}
 }
