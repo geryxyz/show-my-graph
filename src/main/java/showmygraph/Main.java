@@ -28,9 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class Main {
 
-	public static void main(String[] args) throws Exception {
-		
-		
+	public static void main(String[] args) throws Exception {		
 		var s = new ZeroSource()
 			.then(new Increment())
 			.then(new Increment())
@@ -39,9 +37,7 @@ public class Main {
 		
 		s.pump();
 		System.out.println();
-		
-		/*
-		
+				
 		System.out.println("I will show your graph to you.");
 
 		GraphWindow graphWindow = new GraphWindow();
@@ -123,6 +119,6 @@ public class Main {
 					e.printStackTrace();
 				}
 			}
-		});*/
+		});
 	}
 }
