@@ -2,47 +2,37 @@ package showmygraph.ui;
 
 import javax.swing.JFrame;
 
-import org.apache.commons.lang.NotImplementedException;
-
-import com.yworks.yfiles.geometry.PointD;
-import com.yworks.yfiles.geometry.RectD;
 import com.yworks.yfiles.graph.GraphItemTypes;
-import com.yworks.yfiles.graph.IEdge;
 import com.yworks.yfiles.graph.IGraph;
-import com.yworks.yfiles.graph.ILabel;
 import com.yworks.yfiles.graph.IModelItem;
-import com.yworks.yfiles.graph.INode;
-import com.yworks.yfiles.graph.styles.DefaultLabelStyle;
 import com.yworks.yfiles.layout.organic.OrganicLayout;
 import com.yworks.yfiles.utils.IEventListener;
 import com.yworks.yfiles.view.GraphComponent;
-import com.yworks.yfiles.view.Pen;
 import com.yworks.yfiles.view.input.GraphViewerInputMode;
 import com.yworks.yfiles.view.input.HoveredItemChangedEventArgs;
 import com.yworks.yfiles.view.input.ItemClickedEventArgs;
 import com.yworks.yfiles.view.input.ItemHoverInputMode;
 
+import showmygraph.architecture.EmptyContext;
+import showmygraph.architecture.SingleValueContext;
+import showmygraph.architecture.Sink;
 import showmygraph.model.PropertyMap;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyEvent;
 
-public class GraphWindow {
+public class GraphWindow extends Sink<SingleValueContext<IGraph>> {
 
 	private JFrame frame;
-	private GraphComponent component = new GraphComponent();
-	private IGraph graph;
-
-	public GraphWindow() {
-		initialize();
-	}
-
 	private PropertyHoverWindow hoverWindow = null;
-	
-	private void initialize() {
+	private GraphComponent component = new GraphComponent();
+
+	public void show(IGraph graph) {
+		component.setGraph(graph);
+
 		GraphViewerInputMode inputMode = new GraphViewerInputMode();
 		inputMode.setToolTipItems(GraphItemTypes.LABEL_OWNER);
 		inputMode.setClickableItems(GraphItemTypes.NODE.or(GraphItemTypes.EDGE));
@@ -88,17 +78,13 @@ public class GraphWindow {
 		
 		component.setInputMode(inputMode);
 		
-		this.graph = component.getGraph();
-		
 		frame = new JFrame();
 		frame.setBounds(new Rectangle(0, 0, 500, 500));
 		frame.setTitle("Your graph");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BorderLayout());		
 		frame.getContentPane().add(this.component, BorderLayout.CENTER);		
-	}
 
-	public void show() {
 		OrganicLayout layout = new OrganicLayout();
 		layout.setNodeSizeConsiderationEnabled(true);
 		layout.setMinimumNodeDistance(100);
@@ -120,48 +106,18 @@ public class GraphWindow {
 			}
 		});
 	}
-		
-	public INode addNode(String id) {
-		INode node = graph.createNode();
-		var tag = new PropertyMap(id);
-		node.setTag(tag);
-		return node;
-	}
-	
-	public void setLabelOf(INode node, String text) {
-		ILabel label = graph.addLabel(node, text);
-		graph.setNodeLayout(node, new RectD(new PointD(0, 0), label.getPreferredSize()));
-	}
 
-	public void setLabelOf(IEdge edge, String text) {
-		ILabel label = graph.addLabel(edge, text);
-		DefaultLabelStyle style = new DefaultLabelStyle();
-		style.setBackgroundPaint(new Color(.83f, .83f, .83f, .8f));
-		style.setBackgroundPen(new Pen(new Color(.66f, .66f, .66f, .8f)));
-		graph.setStyle(label, style);
-	}
-
-	public IEdge addEdge(String id, String from, String to) {
-		INode fromNode = null;
-		INode toNode = null;
-		for (var node : graph.getNodes()) {
-				if (node.getTag() instanceof PropertyMap) {
-					PropertyMap tag = (PropertyMap) node.getTag();
-					if (from.equals(tag.getID())) {
-						fromNode = node;
-					}
-					if (to.equals(tag.getID())) {
-						toNode = node;
-					}
+	@Override
+	protected EmptyContext execute(SingleValueContext<IGraph> context) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					show(context.getValue());
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-		}
-		if (fromNode != null && toNode != null) {
-			IEdge edge = graph.createEdge(fromNode, toNode);
-			var tag = new PropertyMap(id);
-			edge.setTag(tag);
-			return edge;
-		} else {
-			throw new NotImplementedException("need to create an exception structure");
-		}
+			}
+		});
+		return EmptyContext.instance;
 	}
 }
